@@ -1,119 +1,115 @@
 package com.codingdojo.bankaccount;
 
-import java.util.ArrayList;
 import java.util.Random;
 
-//-->> Create a BankAccount class.
 public class BankAccount {
 	
-	
-	// -->> The class should have the following attributes: (string) account number, (double) checking balance, (double) savings balance.
-	private Double checkingBalance = 0.00;
-	private Double savingsBalance = 0.00;
+	// Member instance attributes
+	private Double checkingBalance;
+	private Double savingsBalance;
 	private String accountNumber;
 	
+	// Class specific static attributes
+	private static int numberOfAccounts;
+	private static double totalAmount;
 	
-	
-	// ----------------------Random String Attributes----------------------->
-	// -->> Create a private method that returns a random ten digit account number.
-	private String accRandom() {
-		Random r = new Random();
-		ArrayList<Integer> arr = new ArrayList<Integer>();
-
-		for (int i = 0; i < 10; i++) {
-			arr.add(r.nextInt((9 - 0) + 1) + 0);
-		}
-				
-		// Create temp buffer to store each array character before returning them as a
-		// single string
-		StringBuffer b = new StringBuffer();
-
-		for (Integer s : arr) { // enhanced for-loop to iterate each character of the array
-			b.append(s); // append each array character to the temp buffer
-		}
-
-		return b.toString(); // return the temp buffer as string
+	// Class specific static attributes for random account number generation
+	private static Random random = new Random();
+	private static String getRandom() {
+		// Random 10 digit account number
+		return Integer.toString(random.nextInt(1000000000)+1000000000);
 	}
-
 	
-	
-	// ----------------------Account Number Tracking Attributes----------------------->
-	//Create a class member (static) that has the number of accounts created thus far.
-	private static int numberOfAccounts = 0;
-	
-	
-	//Create a class member (static) that tracks the total amount of money stored in every account created.
-	private static Double accountAmountTotals = 0.00;
-	
-	
-
-	// ----------------------Default Constructor Attributes----------------------->
-	// default constructor
+	// Constructor (opening with null specification)
 	public BankAccount() {
-		
-		//In the constructor, call the private method from above so that each user has a random ten digit account.
-		this.accountNumber = accRandom();
-		
-		//In the constructor, be sure to increment the account count.
+		this.accountNumber = getRandom();
+		this.checkingBalance = 0.00;
+		this.savingsBalance = 0.00;
 		numberOfAccounts++;
-		
 	}
-
-		
-
-	// ---------------------Account Number Count Method------------------------>
-	// Find out how many users there are
+	
+	// Constructor (opening with deposit)
+	public BankAccount(double checking, double savings) {
+		this.accountNumber = getRandom();
+		this.checkingBalance = checking;
+		this.savingsBalance = savings;
+		numberOfAccounts++;
+		totalAmount += (this.checkingBalance + this.savingsBalance);
+	}
+	
+	/** <----------------------Getters methods---------------------->
+	 *  >> No setters for security - users should ONLY be able make changes to account balances via the
+	 *  deposit OR withdraw METHODS! otherwise they can directly add money to their account
+	 * */
+	public String getAccountNumber() {return accountNumber;}
+	public Double getCheckingBalance() {return checkingBalance;}
+	public Double getSavingsBalance() {return savingsBalance;}
+	
+	// Find out how many total accounts there are for the bank
 	public static int getCountOfAccounts() {
 		System.out.println("There are currently " + numberOfAccounts + " Accounts at this time.");
 		return numberOfAccounts;
 	}	
 	
-
-	// ---------------------Account Amount Totals Method------------------------>
-	// Find total amount of each account
-	public static Double getAccountAmountTotals() {
-		
-		System.out.println("Total account summary is: $" + String.format("%.2f",accountAmountTotals));
-		return accountAmountTotals;
+	// Find total amount of all accounts for the bank
+	public static Double getAmountTotals() {
+		System.out.println("Total account summary is: $" + String.format("%.2f",totalAmount));
+		return totalAmount;
 	}	
 	
-	
-	
-	
-	
-	// -------------------------------------Getters and Setters---------------------------------------->
-	
-	
-	// ---------------------Account Number Attributes------------------------>
-	// Account Number Getter Method
-	public String getAccountNumber() {
-		return accountNumber;
-	}
 
-	
-	// ---------------------Checking Attributes------------------------>
-	// -->> Create a getter method for the user's checking account balance.
-	public Double getCheckingBalance() {
-		return checkingBalance;
-	}
-	
-	// Setter
-	public void setCheckingBalance(Double checkingBalance) {
-		this.checkingBalance = checkingBalance;
-	}
-	
-	
-	// ---------------------Savings Attributes------------------------>
-	// -->> Create a getter method for the user's saving account balance.
-	public Double getSavingsBalance() {
-		return savingsBalance;
-	}
-	
-	// Setter
-	public void setSavingsBalance(Double savingsBalance) {
-		this.savingsBalance = savingsBalance;
-	}
-	
+	// ---------------------Deposit Method------------------------>
+		//Create a method that will allow a user to deposit money into either the checking or saving, be sure to add to total amount stored.
+		public void deposit(int accountType, Double amount) {
+			if(accountType == 1) {
+				this.savingsBalance += amount;
+				totalAmount += amount;
+				System.out.println("Your deposit of $" + String.format("%.2f",amount) + " has been accepted into your savings account, your new balance is: $" + String.format("%.2f",this.getSavingsBalance()));
+			}
+			else if(accountType == 2) {
+				this.checkingBalance += amount;
+				totalAmount += amount;
+				System.out.println("Your deposit of $" + String.format("%.2f",amount) + " has been accepted into your checking account, your new balance is: $" + String.format("%.2f",this.getCheckingBalance()));
+			}
+			
+		}
+		
 
+		// ---------------------Withdraw Method------------------------>
+		//Create a method to withdraw money from one balance. Do not allow them to withdraw money if there are insufficient funds.
+		public void withdraw(int accountType, Double amount) {
+			if(accountType == 1) {
+				if(this.getSavingsBalance() - amount < 0) {
+					System.out.println("Insufficient funds to withdraw $" + String.format("%.2f",amount) + ", please try again. Your current balance is: $" + String.format("%.2f",this.getSavingsBalance()));
+				}
+				else if(this.getSavingsBalance() - amount >= 0){
+					this.savingsBalance -= amount;
+					totalAmount -= amount;
+					System.out.println("Your withdraw of $" + String.format("%.2f",amount) + " has been debited from your savings account, your new balance is: $" + String.format("%.2f",this.getSavingsBalance()));
+				}
+					
+			}
+			if(accountType == 2) {
+				if(this.getCheckingBalance() - amount < 0) {
+					System.out.println("Insufficient funds to withdraw $" + String.format("%.2f",amount) + ", please try again. Your current balance is: $" + String.format("%.2f",this.getCheckingBalance()));
+				}
+				else if(this.getCheckingBalance() - amount >= 0) {
+					this.checkingBalance -= amount;
+					totalAmount -= amount;
+					System.out.println("Your withdraw of $" + String.format("%.2f",amount) + " has been debited from your checking account, your new balance is: $" + String.format("%.2f",this.getCheckingBalance()));
+				}
+				
+			}
+			
+		}
+		
+
+		// ---------------------Get Balances Method------------------------>
+		//Create a method to see the total money from the checking and saving.
+		public void displayBalance() {
+			System.out.println("Your current checking balance is: $" + String.format("%.2f",this.getCheckingBalance()));
+			System.out.println("Your current savings balance is: $" + String.format("%.2f",this.getSavingsBalance()));
+		}
+	
 
 }
